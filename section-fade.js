@@ -156,12 +156,45 @@
             }
         }
 
+        /**
+         * Initialize menu clicks to change the content on click
+         */
+        function initMenuClicks() {
+            for (var i = 0; i < menus.length; i++) {
+                var menu = menus[i];
+                var elements = menu.querySelectorAll('[data-menuanchor] a');
+
+                for (var l = 0; l < elements.length; l++) {
+                    var element = elements[l];
+
+                    // On anchor click, go to the section based on the href
+                    element.addEventListener('click', function () {
+                        for (var s = 0; s < sections.length; s++) {
+                            var section = sections[s];
+    
+                            if (this.hash == '#' + section.id) {
+                                setCurrent(section);
+    
+                                break;
+                            }
+                        }
+                    });
+                }
+            }
+        }
+
         
         // Listen for scroll events
         this.init = function () {
             window.addEventListener('wheel', onWheel);
 
+            // Initialize the current page using the hash of the url
             initByHash();
+
+            // If the menu is set, initialize menu click
+            if (menus) {
+                initMenuClicks();
+            }
         }
 
         // Remove event listener
