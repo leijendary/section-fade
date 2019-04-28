@@ -168,17 +168,39 @@
                     var element = elements[l];
 
                     // On anchor click, go to the section based on the href
-                    element.addEventListener('click', function () {
-                        for (var s = 0; s < sections.length; s++) {
-                            var section = sections[s];
-    
-                            if (this.hash == '#' + section.id) {
-                                setCurrent(section);
-    
-                                break;
-                            }
-                        }
-                    });
+                    element.addEventListener('click', goToSection);
+                }
+            }
+        }
+
+        /**
+         * Remove event listeners for all menus
+         */
+        function destroyMenuClicks() {
+            for (var i = 0; i < menus.length; i++) {
+                var menu = menus[i];
+                var elements = menu.querySelectorAll('[data-menuanchor] a');
+
+                for (var l = 0; l < elements.length; l++) {
+                    var element = elements[l];
+
+                    // On anchor click, go to the section based on the href
+                    element.addEventListener('click', goToSection);
+                }
+            }
+        }
+
+        /**
+         * Go to section. This is for the menu click event
+         */
+        function goToSection() {
+            for (var s = 0; s < sections.length; s++) {
+                var section = sections[s];
+
+                if (this.hash == '#' + section.id) {
+                    setCurrent(section);
+
+                    break;
                 }
             }
         }
@@ -199,7 +221,11 @@
 
         // Remove event listener
         this.destroy = function () {
-            window.removeEventListener('wheel', onWheel)
+            window.removeEventListener('wheel', onWheel);
+
+            if (menus) {
+                destroyMenuClicks();
+            }
         };
 
         // Initialize the event listener
