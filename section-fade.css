@@ -1,0 +1,18 @@
+.sf {
+    height: 100%;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    visibility: hidden;
+}
+
+.sf-section {
+    transition: all 700ms ease;
+}
+
+.sf.active {
+    opacity: 1;
+    visibility: visible;
+}
