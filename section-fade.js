@@ -1,7 +1,7 @@
 (function () {
     'use strict';
 
-    var SectionFade = function (el, options) {
+    var SectionFade = function (element, options) {
         // Current section details
         var current = this.current = {
             index: 0,
@@ -9,16 +9,39 @@
             element: undefined
         };
 
+        //
         // Options
+        
+        // The menus to be updated when the page is changed
         var menus = options.menu ? query(options.menu) : undefined;
+        // Query selection for all the sections inside the element
         var sectionSelector = options.sectionSelector || '.sf';
-        var sections = query(el + ' ' + sectionSelector);
+        // List of sections inside the element
+        var sections = query(element + ' ' + sectionSelector);
+        // If set to true, when the page is changed, the hash in the url
+        // will also be updated
         var includeAnchor = options.includeAnchor;
+        // Delay before being able to scroll to the other page
+        var delay = options.delay || 700;
+        // What elements are scrollable therefore the scrolling
+        // should be paused when these elements are being scrolled
+        var scrollables = options.scrollables 
+            ? query(options.scrollables) 
+            : undefined;
+        // Indication if the scrolling page change is paused
+        var isPaused = false;
+        // Paused timeout
+        var pauseTimeout;
 
         /**
          * Listener for wheel events
          */
         function onWheel(e) {
+            // If the scrolling should be paused, do nothing
+            if (isPaused || (scrollables && scrollables.isScrolling())) {
+                return;
+            }
+
             var direction = e.deltaY < 0 ? 'up' : 'down';
     
             // If the direction is towards "up", then show the next element.
@@ -28,6 +51,8 @@
             } else {
                 previousElement();
             }
+
+            pauseByDelay();
         }
 
         /**
@@ -120,14 +145,31 @@
 
                 for (var l = 0; l < elements.length; l++) {
                     var element = elements[l];
+                    var menuanchor = element.attributes['data-menuanchor'];
 
-                    if (element.attributes['data-menuanchor'].value == current.id) {
+                    if (menuanchor.value == current.id) {
                         element.classList.add('active');
                     } else {
                         element.classList.remove('active');
                     }
                 }
             }
+        }
+
+        /**
+         * Set the pause variable to true and wait for the delay value
+         * count before setting the pause variable back to false
+         */
+        function pauseByDelay() {
+            isPaused = true;
+
+            // Clear the timeout for the pause variable
+            clearTimeout(pauseTimeout);
+
+            // Wait for the delay to be finished. Then set isPaused to false
+            pauseTimeout = setTimeout(function () {
+                isPaused = false;
+            }, delay);
         }
 
         /**
@@ -157,6 +199,71 @@
         }
 
         /**
+         * Initialize the scrollables elements
+         */
+        function initScrollables() {
+            // For each scrollable, element, set the wheel listener
+            for (var i = 0; i < scrollables.length; i++) {
+                var scrollable = scrollables[i];
+                var scrollTimeout;
+
+                /**
+                 * In this wheel listener, check if the element is at top or
+                 * bottom and the element is moving because when the element
+                 * reached bottom and the user scrolled up, the top scrollTop
+                 * value of the element is still the bottom most value.
+                 * After checking if the scrolling direction is going up,
+                 * check if the previous scrollTop value is equal to the
+                 * current scrollTop and if they are equal and the direction
+                 * is not going up, then the element is not being scrolled
+                 * or has finished scrolling. Otherwise, set the element as
+                 * currently scrolling and set the scrolling variable as false
+                 * after n milliseconds set in the delay parameter
+                 */
+                scrollable.onwheel = function (e) {
+                    var atTop = this.scrollTop == 0;
+                    var atBottom = this.scrollTop == this.scrollTopMax;
+                    var direction = e.deltaY < 0 ? 'up' : 'down';
+                    var isMoving;
+
+                    if (atTop && direction == 'down') {
+                        isMoving = true;
+                    } else if (atBottom && direction == 'up') {
+                        isMoving = true;
+                    }
+
+                    if (this.previousTop == this.scrollTop && !isMoving) {
+                        return;
+                    }
+                    
+                    this.scrolling = true;
+                    this.previousTop = this.scrollTop;
+
+                    // Clear the timeout for the pause variable
+                    clearTimeout(scrollTimeout);
+
+                    scrollTimeout = setTimeout(function () {
+                        scrollable.scrolling = false;
+                    }, delay);
+                }
+            }
+
+            /**
+             * Check if there is a scrollable element that is currently
+             * being scrolled
+             */
+            scrollables.isScrolling = function () {
+                for (var i = 0; i < scrollables.length; i++) {
+                    var scrollable = scrollables[i];
+    
+                    if (scrollable.scrolling) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        /**
          * Initialize menu clicks to change the content on click
          */
         function initMenuClicks() {
@@ -168,39 +275,17 @@
                     var element = elements[l];
 
                     // On anchor click, go to the section based on the href
-                    element.addEventListener('click', goToSection);
-                }
-            }
-        }
-
-        /**
-         * Remove event listeners for all menus
-         */
-        function destroyMenuClicks() {
-            for (var i = 0; i < menus.length; i++) {
-                var menu = menus[i];
-                var elements = menu.querySelectorAll('[data-menuanchor] a');
-
-                for (var l = 0; l < elements.length; l++) {
-                    var element = elements[l];
-
-                    // On anchor click, go to the section based on the href
-                    element.addEventListener('click', goToSection);
-                }
-            }
-        }
-
-        /**
-         * Go to section. This is for the menu click event
-         */
-        function goToSection() {
-            for (var s = 0; s < sections.length; s++) {
-                var section = sections[s];
-
-                if (this.hash == '#' + section.id) {
-                    setCurrent(section);
-
-                    break;
+                    element.onclick = function () {
+                        for (var s = 0; s < sections.length; s++) {
+                            var section = sections[s];
+    
+                            if (this.hash == '#' + section.id) {
+                                setCurrent(section);
+    
+                                break;
+                            }
+                        }
+                    };
                 }
             }
         }
@@ -208,10 +293,15 @@
         
         // Listen for scroll events
         this.init = function () {
-            window.addEventListener('wheel', onWheel);
+            window.onwheel = onWheel;
 
             // Initialize the current page using the hash of the url
             initByHash();
+
+            // If the scrollables options is set, initialize the elements
+            if (scrollables) {
+                initScrollables();
+            }
 
             // If the menu is set, initialize menu click
             if (menus) {
@@ -222,11 +312,21 @@
         // Remove event listener
         this.destroy = function () {
             window.removeEventListener('wheel', onWheel);
-
-            if (menus) {
-                destroyMenuClicks();
-            }
         };
+
+        /**
+         * Pause the scrolling event
+         */
+        this.pause = function () {
+            isPaused = true;
+        }
+
+        /**
+         * Un pause the scrolling event
+         */
+        this.unPause = function () {
+            isPaused = false;
+        }
 
         // Initialize the event listener
         this.init();
