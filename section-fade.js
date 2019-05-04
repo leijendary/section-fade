@@ -1,3 +1,8 @@
+/*!
+ * Section Fade. Fade full page sections as you scroll.
+ * 
+ * https://github.com/lejendary/section-fade
+ */
 (function () {
     'use strict';
 
