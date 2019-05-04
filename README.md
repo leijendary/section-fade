@@ -6,9 +6,9 @@ Usage:
 
 ```
 new SectionFade('main', {
-    menu: '#menu', // Default
+    menu: '#menu',
     sectionSelector: '.sf', // Default
-    includeAnchor: true, // Default
+    includeAnchor: true,
     delay: 700, // Default
     scrollables: '.scroll-container'
 });
