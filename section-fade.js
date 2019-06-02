@@ -1,8 +1,3 @@
-/*!
- * Section Fade. Fade full page sections as you scroll.
- * 
- * https://github.com/lejendary/section-fade
- */
 (function () {
     'use strict';
 
@@ -16,7 +11,7 @@
 
         //
         // Options
-        
+
         // The menus to be updated when the page is changed
         var menus = options.menu ? query(options.menu) : undefined;
         // Query selection for all the sections inside the element
@@ -30,8 +25,8 @@
         var delay = options.delay || 700;
         // What elements are scrollable therefore the scrolling
         // should be paused when these elements are being scrolled
-        var scrollables = options.scrollables 
-            ? query(options.scrollables) 
+        var scrollables = options.scrollables
+            ? query(options.scrollables)
             : undefined;
         // Indication if the scrolling page change is paused
         var isPaused = false;
@@ -48,7 +43,7 @@
             }
 
             var direction = e.deltaY < 0 ? 'up' : 'down';
-    
+
             // If the direction is towards "up", then show the next element.
             // Else, show the previous element
             if (direction == 'down') {
@@ -226,8 +221,9 @@
                  * after n milliseconds set in the delay parameter
                  */
                 scrollable.onwheel = function (e) {
+                    var scrollMax = this.scrollHeight - this.offsetHeight;
                     var atTop = this.scrollTop == 0;
-                    var atBottom = this.scrollTop == this.scrollTopMax;
+                    var atBottom = Math.ceil(this.scrollTop) == scrollMax;
                     var direction = e.deltaY < 0 ? 'up' : 'down';
                     var isMoving;
 
@@ -240,7 +236,7 @@
                     if (this.previousTop == this.scrollTop && !isMoving) {
                         return;
                     }
-                    
+
                     this.scrolling = true;
                     this.previousTop = this.scrollTop;
 
@@ -260,7 +256,7 @@
             scrollables.isScrolling = function () {
                 for (var i = 0; i < scrollables.length; i++) {
                     var scrollable = scrollables[i];
-    
+
                     if (scrollable.scrolling) {
                         return true;
                     }
@@ -283,10 +279,10 @@
                     element.onclick = function () {
                         for (var s = 0; s < sections.length; s++) {
                             var section = sections[s];
-    
+
                             if (this.hash == '#' + section.id) {
                                 setCurrent(section);
-    
+
                                 break;
                             }
                         }
@@ -295,7 +291,7 @@
             }
         }
 
-        
+
         // Listen for scroll events
         this.init = function () {
             window.onwheel = onWheel;
