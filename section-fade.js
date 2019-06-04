@@ -341,7 +341,7 @@
     };
 
 
-    // Set the fade varialbe of the window as the fade variable
+    // Set the fade variable of the window as the fade variable
     // of this code
     window.SectionFade = SectionFade;
 })();
