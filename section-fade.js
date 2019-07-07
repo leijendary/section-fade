@@ -113,6 +113,8 @@
          * Update supporting elements
          */
         function updateElements(setHash) {
+            setHash = setHash === undefined ? true : false;
+
             // If the option "includeAnchor" is set to true, change the anchor
             // of the url based on the id of the section
             if (includeAnchor && !!setHash) {
