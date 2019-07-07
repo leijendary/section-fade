@@ -118,7 +118,7 @@
 
             // If the option "includeAnchor" is set to true, change the anchor
             // of the url based on the id of the section
-            if (includeAnchor && !!setHash) {
+            if (includeAnchor && setHash) {
                 changeAnchor();
             }
 
