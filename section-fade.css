@@ -9,7 +9,7 @@
 }
 
 .sf-section {
-    transition: all 700ms ease;
+    transition: opacity 0.7s ease, visibility 0.7s ease;
 }
 
 .sf.active {
